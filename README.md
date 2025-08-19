@@ -124,12 +124,13 @@ any 256-wide png as a map. See cblutgen -h for more info, and
 Building
 --------
 
-To build and run the tool, use
+To build the tool, use 'make', or
 
     c++ --std=c++11 CBLuts.cpp ColourMaps.cpp CBLutGen.cpp -o cblutgen
 
-Or, include these files in your favourite IDE, build, and run.
+Or, include the file above in your favourite IDE, build, and run.
 
-To (re)generate simulated and corrected versions of the supplied [test
-images](tests/README.md), along with markdown-style results files, run the
-supplied "generate" script. (Currently unix-style OSes only.)
+To generate simulated and corrected versions of the supplied [test
+images](tests), along with markdown-style results files, run the supplied
+"generate" script. (Currently unix-style OSes only.) The results can be found in
+the 'out' directory.

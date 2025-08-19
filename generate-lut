@@ -1,0 +1,68 @@
+#!/bin/bash
+
+#
+# Version of generate that uses the luts in luts/*
+# instead of built-ins
+#
+
+CBLUT=${CBLUT-./cblutgen}
+OUT=${OUT-out-lut}
+
+if [ ! -e $CBLUT ]; then
+    echo "executable $CBLUT not found"
+    exit
+fi
+
+mkdir -p $OUT
+pushd $OUT
+
+for c in protanope deuteranope tritanope; do
+    cat << EOF > results-$c.md
+Results for '$c'
+-------
+
+EOF
+
+done
+
+
+
+for i in ../tests/*.*; do
+    BASE=${i##*/}
+    IMAGE=${BASE%.*}
+
+    echo "=== processing " $IMAGE
+
+    mkdir -p $IMAGE
+    pushd $IMAGE
+
+        for lut in ../../luts/*_lut.png; do
+            lutbase=${lut##.*/};
+            lutname=${lutbase%_lut.png};
+            echo $lutname;
+            ../../$CBLUT -f ../$i -l $lut
+            mv apply_lut.png ${lutname}.png
+        done
+
+    popd
+
+    echo "updating results-$c.md"
+
+    for c in protanope deuteranope tritanope; do
+        cat << EOF >> results-$c.md
+$IMAGE
+---
+
+<img src="$IMAGE/identity.png" alt="Original" width="256"/>
+<img src="$IMAGE/${c}_daltonise.png" alt="Daltonised" width="256"/>
+<img src="$IMAGE/${c}_correct.png" alt="Corrected" width="256"/>
+<img src="$IMAGE/${c}_simulate.png" alt="Simulated" width="256"/>
+<img src="$IMAGE/${c}_simulate_daltonised.png" alt="Simulated Daltonised" width="256"/>
+<img src="$IMAGE/${c}_simulate_corrected.png" alt="Simulated Corrected" width="256"/>
+
+EOF
+
+    done
+done
+
+popd

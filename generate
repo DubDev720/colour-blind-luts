@@ -5,6 +5,11 @@ OPS=${OPS-"-m 1 -isxXyY"}
 OUT=${OUT-out}
 DISPLAY_WIDTH=${DISPLAY_WIDTH-256}
 
+if [ ! -e $CBLUT ]; then
+    echo "executable $CBLUT not found"
+    exit
+fi
+
 mkdir -p $OUT
 pushd $OUT
 
