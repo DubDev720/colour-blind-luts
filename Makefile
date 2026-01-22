@@ -1,10 +1,7 @@
-TARGET = cblutgen
 COMPILE_FLAGS = -std=c++11
 
-all: $(TARGET)
-
-$(TARGET): CBLuts.cpp ColourMaps.cpp CBLutGen.cpp
-	$(CXX) $(COMPILE_FLAGS) -o $(TARGET) CBLuts.cpp ColourMaps.cpp CBLutGen.cpp
+cblutgen: CBLuts.cpp ColourMaps.cpp CBLutGen.cpp
+	$(CXX) $(COMPILE_FLAGS) -o $@ CBLuts.cpp ColourMaps.cpp CBLutGen.cpp
 
 clean:
-	$(RM) $(TARGET)
+	$(RM) cblutgen

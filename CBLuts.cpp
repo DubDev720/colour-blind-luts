@@ -1,9 +1,9 @@
 //
-//  File:       CBLuts.cpp
+// CBLuts.cpp
 //
-//  Function:   Utilities for colour-blind modelling and LUT construction
+// Utilities for colour-blind modelling and LUT construction
 //
-//  Copyright:  Andrew Willmott 2018
+// Andrew Willmott
 //
 
 #include "CBLuts.h"
@@ -60,16 +60,16 @@ const Mat3f CBLut::kLMSTritanope =      /// Tritanope: blue sensitivity greatly 
 
 namespace
 {
-    inline float& elt(      Vec3f& v, int i) { return (&v.x)[i]; } 
-//  inline Vec3f& row(      Mat3f& m, int i) { return (&m.x)[i]; } 
-    inline float  elt(const Vec3f& v, int i) { return (&v.x)[i]; } 
-    inline Vec3f  row(const Mat3f& m, int i) { return (&m.x)[i]; } 
-    inline Vec3f  col(const Mat3f& m, int i) { return { (&m.x.x)[i], (&m.y.x)[i], (&m.z.x)[i] }; } 
+    inline float& elt(      Vec3f& v, int i) { return (&v.x)[i]; }
+//  inline Vec3f& row(      Mat3f& m, int i) { return (&m.x)[i]; }
+    inline float  elt(const Vec3f& v, int i) { return (&v.x)[i]; }
+    inline Vec3f  row(const Mat3f& m, int i) { return (&m.x)[i]; }
+    inline Vec3f  col(const Mat3f& m, int i) { return { (&m.x.x)[i], (&m.y.x)[i], (&m.z.x)[i] }; }
 
     inline Vec3f operator+(Vec3f a, Vec3f b) { return { a.x + b.x, a.y + b.y, a.z + b.z}; }
     inline Vec3f operator-(Vec3f a, Vec3f b) { return { a.x - b.x, a.y - b.y, a.z - b.z}; }
     inline Vec3f operator*(float s, Vec3f a) { return { s   * a.x, s   * a.y, s   * a.z}; }
-    
+
     inline float dot      (Vec3f a, Vec3f b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
     inline Vec3f pow      (Vec3f v, float p) { return { powf(v.x, p), powf(v.y, p), powf(v.z, p) }; }
 
@@ -84,7 +84,7 @@ namespace
 
 namespace
 {
-    // Note that unlike kLMSFromRGB, LMS are weighted, e.g., red -> (17.8, 3.4, 0.02), blue ->  
+    // Note that unlike kLMSFromRGB, LMS are weighted, e.g., red -> (17.8, 3.4, 0.02), blue ->
     const Mat3f kLMSFromRGBV =
     {
          { 17.8824f,   43.5161f,   4.11935f },
@@ -161,7 +161,7 @@ Vec3f CBLut::Daltonise(Vec3f rgb, tLMS lmsType, float strength)
     // + use to shift colors towards visible spectrum
     Vec3f rgbSim;
     Vec3f rgbDelta;
-    
+
     switch (lmsType)
     {
     case kL:
@@ -177,7 +177,7 @@ Vec3f CBLut::Daltonise(Vec3f rgb, tLMS lmsType, float strength)
         rgbDelta = kDaltonErrorToDeltaT * (strength * (rgb - rgbSim));
         break;
     }
-    
+
     return rgb + rgbDelta;
 }
 
@@ -273,7 +273,7 @@ Vec3f CBLut::Correct(Vec3f rgb, tLMS lmsType, float strength)
     elt(correct, lmsType) = ms * 2.0f;
 
     Vec3f lmsCorrect = lms + error * correct;
-    
+
     rgb = kRGBFromLMS * lmsCorrect;
 
     return rgb;
@@ -344,7 +344,7 @@ Vec3f CBLut::FromRGBA32u(RGBA32 rgb)
     Vec3f c = { rgb.c[0] / 256.0f, rgb.c[1] / 256.0f, rgb.c[2] / 256.0f };
     return pow(c, kGamma);
 }
-    
+
 
 void CBLut::CreateIdentityLUT(RGBA32 rgbLUT[kLUTSize][kLUTSize][kLUTSize])
 {
@@ -406,7 +406,7 @@ void CBLut::ApplyLUT(RGBA32 rgbLUT[kLUTSize][kLUTSize][kLUTSize], int n, const R
             assert(0 <= i0[j] && i0[j] < kLUTSize);
             assert(0 <= i1[j] && i1[j] < kLUTSize);
         }
-        
+
         RGBA32 lutC0 = rgbLUT[i0[2]][i0[1]][i0[0]];
         RGBA32 lutC1 = rgbLUT[i1[2]][i1[1]][i1[0]];
 
@@ -453,15 +453,15 @@ void CBLut::ApplyMonoLUT(const RGBA32 monoLUT[256], int n, const RGBA32 dataIn[]
         {
             Vec3f c = FromRGBA32(dataIn[i]);    // now linear
             float lumD65 = dot(Vec3f{0.2126f, 0.7152f, 0.0722f}, c);
-            
+
             uint8_t lumU8 = ToU8(pow(lumD65, 1.0f / kGamma));    // lookup tables are in gamma space
-        
+
             dataOut[i] = monoLUT[lumU8];
         }
         return;
     }
-    
+
     for (int i = 0; i < n; i++)
         dataOut[i] = monoLUT[dataIn[i].c[channel]];
 }
-    
+

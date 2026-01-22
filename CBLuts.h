@@ -1,9 +1,9 @@
 //
-//  File:       CBLuts.h
+// CBLuts.h
 //
-//  Function:   Utilities for colour-blind modelling and LUT construction
+// Utilities for colour-blind modelling and LUT construction
 //
-//  Copyright:  Andrew Willmott 2018
+// Andrew Willmott
 //
 
 #ifndef CB_LUTS_H
@@ -32,8 +32,8 @@ namespace CBLut
     };
 
     // Colour blindness simulation and correction
-    Vec3f Simulate (Vec3f rgb, tLMS lmsType, float strength = 1.0f); ///< Simulate given form of colour blindness, with optional 0-1 strength for e.g. protanomaly (< 1) rather than protanopia (= 1). 
-    
+    Vec3f Simulate (Vec3f rgb, tLMS lmsType, float strength = 1.0f); ///< Simulate given form of colour blindness, with optional 0-1 strength for e.g. protanomaly (< 1) rather than protanopia (= 1).
+
     Vec3f Daltonise(Vec3f rgb, tLMS lmsType, float strength = 1.0f); ///< "Daltonise" 'rgb' to enhance it for the given type of colour blindness, using Fidaner et al.
     Vec3f Correct  (Vec3f rgb, tLMS lmsType, float strength = 1.0f); ///< Correct image for given type of colour blindness using a mixture of amplification and hue shifting.
 
@@ -47,7 +47,7 @@ namespace CBLut
             uint32_t u32;
         };
     };
-    
+
     RGBA32 ToRGBA32   (Vec3f c);
     RGBA32 ToRGBA32u  (Vec3f c);
     Vec3f  FromRGBA32 (RGBA32 rgb);
@@ -58,12 +58,12 @@ namespace CBLut
     constexpr int kLUTSize = 1 << kLUTBits;
 
     void CreateIdentityLUT(RGBA32 rgbLUT[kLUTSize][kLUTSize][kLUTSize]);    // Create identity
-    void ApplyLUT      (RGBA32 rgbLUT[kLUTSize][kLUTSize][kLUTSize], int n, const RGBA32 dataIn[], RGBA32 dataOut[]); ///< Apply lut to the given image 
+    void ApplyLUT      (RGBA32 rgbLUT[kLUTSize][kLUTSize][kLUTSize], int n, const RGBA32 dataIn[], RGBA32 dataOut[]); ///< Apply lut to the given image
     void ApplyLUTNoLerp(RGBA32 rgbLUT[kLUTSize][kLUTSize][kLUTSize], int n, const RGBA32 dataIn[], RGBA32 dataOut[]); ///< Apply lut to the given image, using point sampling
 
     // Mono LUT support
     void ApplyMonoLUT(const RGBA32 monoLUT[256], int n, const RGBA32 dataIn[], RGBA32 dataOut[], int channel = -1);
-    ///< Apply given mono->rgba ramp to either sRGB (D65) luminance, or the specified channel. 
+    ///< Apply given mono->rgba ramp to either sRGB (D65) luminance, or the specified channel.
 }
 
 #endif

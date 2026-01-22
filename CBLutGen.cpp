@@ -1,9 +1,9 @@
 //
-//  File:       CBLutGen.cpp
+// CBLutGen.cpp
 //
-//  Function:   Utilities for colour-blind modelling and LUT construction
+// Utilities for colour-blind modelling and LUT construction
 //
-//  Copyright:  Andrew Willmott 2018
+// Andrew Willmott
 //
 
 #define _CRT_SECURE_NO_WARNINGS
@@ -14,12 +14,16 @@
 
 #include "stb_image_mini.h"
 
+#include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <assert.h>
+#include <string.h>
 
 #ifdef _MSC_VER
     #define strlcpy(d, s, ds) strcpy_s(d, ds, s)
+#elif defined(__linux__)
+    // Linux does have this, but it sometimes requires #include <bsd/string.h> + -lbsd, too much faff
+    #define strlcpy(d, s, ds) do { strncpy(d, s, ds); d[ds - 1] = 0; } while (false)
 #endif
 
 using namespace CBLut;
@@ -28,9 +32,9 @@ namespace
 {
     inline Vec3f operator+(Vec3f a, Vec3f b) { return { a.x + b.x, a.y + b.y, a.z + b.z}; }
     inline Vec3f operator-(Vec3f a, Vec3f b) { return { a.x - b.x, a.y - b.y, a.z - b.z}; }
-    
+
     inline Vec3f& operator*=(Vec3f& v, float s) { v.x *= s; v.y *= s; v.z *= s; return v; }
-    
+
     inline float dot      (Vec3f a, Vec3f b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
     inline Vec3f operator*(Vec3f a, Vec3f b) { return { a.x * b.x, a.y * b.y, a.z * b.z}; }
 
@@ -46,9 +50,9 @@ namespace
 
     inline Vec3f ClampUnit(Vec3f c)
     {
-        return { 
-        c.x < 0.0f ? 0.0f : c.x > 1.0f ? 1.0f : c.x, 
-        c.y < 0.0f ? 0.0f : c.y > 1.0f ? 1.0f : c.y, 
+        return {
+        c.x < 0.0f ? 0.0f : c.x > 1.0f ? 1.0f : c.x,
+        c.y < 0.0f ? 0.0f : c.y > 1.0f ? 1.0f : c.y,
         c.z < 0.0f ? 0.0f : c.z > 1.0f ? 1.0f : c.z };
     }
 
@@ -61,10 +65,10 @@ namespace
 
     Vec3f RGBError(Vec3f c, tLMS lmsType, float strength)
     {
-        Vec3f sc = Simulate(c, lmsType, strength); 
+        Vec3f sc = Simulate(c, lmsType, strength);
         return c - sc;
     }
-    
+
     Vec3f LMSSwap(Vec3f rgb, tLMS ch)
     {
         Vec3f lms = kLMSFromRGB * rgb;
@@ -73,16 +77,16 @@ namespace
         switch (ch)
         {
         case kL:
-            t = lms.x; lms.x = lms.y; lms.y = t; 
+            t = lms.x; lms.x = lms.y; lms.y = t;
             break;
         case kM:
-            t = lms.y; lms.y = lms.z; lms.z = t; 
+            t = lms.y; lms.y = lms.z; lms.z = t;
             break;
         case kS:
-            t = lms.z; lms.z = lms.x; lms.x = t; 
+            t = lms.z; lms.z = lms.x; lms.x = t;
             break;
         };
-        
+
         rgb = kRGBFromLMS * lms;
         return rgb;
     }
@@ -91,12 +95,12 @@ namespace
     {
         Vec3f lmsP = kLMSFromRGB * rgb;
         Vec3f lmsSimP = kLMSProtanope * lmsP;
-        
-        float error = lmsP.x - lmsSimP.x; 
+
+        float error = lmsP.x - lmsSimP.x;
 
         Vec3f lmsS = lmsSimP;
         lmsS.z += 10 * error;
-        
+
         return kRGBFromLMS * lmsS;
     }
 
@@ -104,12 +108,12 @@ namespace
     {
         Vec3f lmsM = kLMSFromRGB * rgb;
         Vec3f lmsSimM = kLMSDeuteranope * lmsM;
-        
-        float error = lmsM.x - lmsSimM.x; 
+
+        float error = lmsM.x - lmsSimM.x;
 
         Vec3f lmsS = lmsSimM;
         lmsS.z += 10 * error;
-        
+
         return kRGBFromLMS * lmsS;
     }
 
@@ -169,7 +173,7 @@ namespace
         kAll,
     };
 
-    enum tImageOp 
+    enum tImageOp
     {
         kSimulate,
         kError,
@@ -220,10 +224,10 @@ namespace
         RGBA32 rgbaLUT[kLUTSize][kLUTSize][kLUTSize];
         RGBA32* dataOut = 0;
         int n = w * h;
-        
-        if (noLUT && dataIn) 
+
+        if (noLUT && dataIn)
             dataOut = new RGBA32[n];
-        
+
         switch (op)
         {
         case kSimulate:
@@ -287,9 +291,9 @@ namespace
         RGBA32* dataOut = new RGBA32[n];
 
         ApplyLUT(* (RGBA32 (*)[kLUTSize][kLUTSize][kLUTSize]) (RGBA32*) rgbaLUT, w * h, dataIn, dataOut);
-        
+
         char filename[256] = "apply_lut";
-        
+
         printf("Saving %s\n", filename);
         strcat(filename, ".png");
 
@@ -303,7 +307,7 @@ namespace
 namespace
 {
     // Mono LUT processing
-    struct cMonoLUTEntry { const char* name; const uint8_t (*lut)[4]; } kMonoLUTs[]  = 
+    struct cMonoLUTEntry { const char* name; const uint8_t (*lut)[4]; } kMonoLUTs[]  =
     {
         "cividis", kCividisLUT,
         "viridis", kViridisLUT,
@@ -320,7 +324,7 @@ namespace
         {
             const uint8_t* c = monoLUT[i].c;
             printf("    %3d, %3d, %3d, %3d,\n", c[0], c[1], c[2], c[3]);
-        } 
+        }
 
         printf("};\n");
     }
@@ -342,14 +346,14 @@ namespace
             for (int i = 0; i < h; i++)
                 memcpy(dataOut + i * w, monoLUT, w * sizeof(RGBA32));
         }
-        
+
         char filename[256];
-        
+
         if (dataIn)
             snprintf(filename, sizeof(filename), "%s_%s.png", dataName, lutName);
         else
             snprintf(filename, sizeof(filename), "%s_lut.png", lutName);
-        
+
         printf("Saving %s\n", filename);
         stbi_write_png(filename, w, h, 4, dataOut, 0);
 
@@ -372,7 +376,7 @@ namespace
             "  -d        : emit deuteranope image or lut\n"
             "  -t        : emit tritanope image or lut\n"
             "  -a        : emit image or lut for all the above types (default)\n"
-            "  -m <str>  : specify strength of colour blindness to correct for. Default = 1 (affected channel is completely lost.)\n" 
+            "  -m <str>  : specify strength of colour blindness to correct for. Default = 1 (affected channel is completely lost.)\n"
             "  -n        : directly transform input image rather than using a LUT\n"
             "  -g[LMS]   : swap LM/MS/LS channels of input image before processing\n"
             "  -r[LM]    : remap L or M channels to S, converting a prot/deuter test image to tritanope.\n"
@@ -496,7 +500,7 @@ int main(int argc, const char* argv[])
                         channel = atoi(argv[0]);
                         argv++; argc--;
                     }
-                    
+
                     CreateImageWithMonoLUT(lutTable, lutName, w, h, dataIn, dataInName, channel);
                         // PrintMonoLUT(lutName, lutTable);
                 }
@@ -507,7 +511,7 @@ int main(int argc, const char* argv[])
                     return fprintf(stderr, "Expecting filename with -f\n");
 
                 dataIn = (RGBA32*) stbi_load(argv[0], &w, &h, 0, 4);
-                
+
                 if (!dataIn)
                 {
                     fprintf(stderr, "Couldn't read %s\n", argv[0]);
@@ -551,11 +555,11 @@ int main(int argc, const char* argv[])
                         Vec3f remapLMS = Vec3f{ 0.46f, 0.45f, 0.25f  } + Vec3f{ 0.08f, 0.1f, 0.5f } * lms;
                         remapLMS *= 0.75;
                         Vec3f rgb = kRGBFromLMS * remapLMS;
-                        
+
                         assert(rgb.x >= 0.0f && rgb.x <= 1.0f);
                         assert(rgb.y >= 0.0f && rgb.y <= 1.0f);
                         assert(rgb.z >= 0.0f && rgb.z <= 1.0f);
-                        
+
                         RGBA32 c = ToRGBA32(rgb);
 
                         (*p++) = c;
@@ -628,7 +632,7 @@ int main(int argc, const char* argv[])
             case 'a':
                 cbType = kAll;
                 break;
-                
+
             case 'n':
                 noLUT = true;
                 break;
@@ -642,7 +646,7 @@ int main(int argc, const char* argv[])
 
                 int lw, lh;
                 RGBA32* lut = (RGBA32*) stbi_load(argv[0], &lw, &lh, 0, 4);
-                
+
                 if (!lut)
                 {
                     fprintf(stderr, "Couldn't read RGB LUT %s\n", argv[0]);
@@ -654,7 +658,7 @@ int main(int argc, const char* argv[])
                     fprintf(stderr, "Expecting RGB LUT width of %d\n", kLUTSize * kLUTSize);
                     return -1;
                 }
-                
+
                 if (lh != kLUTSize)
                 {
                     fprintf(stderr, "Expecting RGB LUT height of %d\n", kLUTSize);
@@ -662,7 +666,7 @@ int main(int argc, const char* argv[])
                 }
 
                 CreateImage(lut, w, h, dataIn);
-                
+
                 argv++; argc--;
                 break;
             }
@@ -678,6 +682,6 @@ int main(int argc, const char* argv[])
         fprintf(stderr, "Unrecognised arguments starting with %s\n", argv[0]);
         return -1;
     }
-        
+
     return 0;
 }
